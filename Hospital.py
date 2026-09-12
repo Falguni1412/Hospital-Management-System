@@ -1,515 +1,2295 @@
 import tkinter as tk
-from tkinter import messagebox, ttk, Frame, PhotoImage, LEFT
-import mysql.connector
-import tkinter as tk
-from tkinter import messagebox, ttk, Frame, PhotoImage, LEFT
-import mysql.connector
-from tkinter import *
 from tkinter import ttk, messagebox
 import mysql.connector
-from PIL import ImageTk
-import random
-import time
-import datetime
+from datetime import datetime
 
-# Dummy credentials for demonstration
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
 USERNAME = "admin"
 PASSWORD = "password123"
 
+DB_CONFIG = {
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "mydata"
+}
+
+
+# ============================================================
+# COLORS
+# ============================================================
+
+BG = "#F4F7FB"
+CARD = "#FFFFFF"
+NAVY = "#102A43"
+NAVY_2 = "#173F5F"
+TEAL = "#16B8A6"
+TEAL_DARK = "#0E9183"
+TEXT = "#243B53"
+MUTED = "#7B8794"
+BORDER = "#D9E2EC"
+WHITE = "#FFFFFF"
+RED = "#E55353"
+GREEN = "#20A464"
+ORANGE = "#F59E0B"
+LIGHT_TEAL = "#E8F8F5"
+LIGHT_BLUE = "#EAF2F8"
+
+
+# ============================================================
+# DATABASE HELPER
+# ============================================================
+
+def get_connection():
+    return mysql.connector.connect(**DB_CONFIG)
+
+
+# ============================================================
+# LOGIN PAGE
+# ============================================================
+
 class LoginPage:
+
     def __init__(self, window):
+
         self.window = window
-        self.window.title("Login Page")
-        self.window.geometry("1280x700+0+0")
-        
-        # Load background image and keep a reference
-        self.backgroundImage = ImageTk.PhotoImage(file=('bg.jpg'))
-        self.bgLabel = Label(window, image=self.backgroundImage)
-        self.bgLabel.place(x=0, y=0)  # Set the background size and position
 
-        # Create login frame
-        self.loginFrame = Frame(window, bg='white')
-        self.loginFrame.place(x=400, y=150)
+        self.window.title("MediCare | Secure Login")
+        self.window.geometry("1200x720")
+        self.window.minsize(1000, 650)
+        self.window.configure(bg=BG)
 
-        # Load and place logo image
-        self.logoImage = PhotoImage(file='logo.png')  # Ensure you have a logo.png file
-        self.logoLabel = tk.Label(self.loginFrame, image=self.logoImage, bg='white')
-        self.logoLabel.grid(row=0, column=0, columnspan=2, pady=10)
+        self.setup_styles()
+        self.build_login()
 
-        # Load and place username label with icon
-        self.usernameImage = PhotoImage(file='user.png')  # Ensure you have a user.png file
-        self.usernameLabel = tk.Label(self.loginFrame, image=self.usernameImage, text='Username', compound=LEFT,
-                                      font=('times new roman', 20, 'bold'), bg='white')
-        self.usernameLabel.grid(row=1, column=0, pady=10, padx=20)
+    # --------------------------------------------------------
+    # STYLES
+    # --------------------------------------------------------
 
-        # Create and place entry for username
-        self.usernameEntry = tk.Entry(self.loginFrame, font=('times new roman', 20, 'bold'), bd=5, fg='royalblue')
-        self.usernameEntry.grid(row=1, column=1, pady=10, padx=20)
+    def setup_styles(self):
 
-        # Load and place password label with icon
-        self.passwordImage = PhotoImage(file='password.png')  # Ensure you have a password.png file
-        self.passwordLabel = tk.Label(self.loginFrame, image=self.passwordImage, text='Password', compound=LEFT,
-                                      font=('times new roman', 20, 'bold'), bg='white')
-        self.passwordLabel.grid(row=2, column=0, pady=10, padx=20)
+        style = ttk.Style()
 
-        # Create and place entry for password
-        self.passwordEntry = tk.Entry(self.loginFrame, font=('times new roman', 20, 'bold'), bd=5, fg='royalblue', show='*')
-        self.passwordEntry.grid(row=2, column=1, pady=10, padx=20)
+        try:
+            style.theme_use("clam")
+        except:
+            pass
 
-        # Create and place login button
-        self.loginButton = tk.Button(self.loginFrame, text='Login', font=('times new roman', 14, 'bold'), width=15,
-                                     fg='white', bg='cornflowerblue', activebackground='cornflowerblue',
-                                     activeforeground='white', cursor='hand2', command=self.login)
-        self.loginButton.grid(row=3, column=1, pady=10)
+        style.configure(
+            "Login.TEntry",
+            fieldbackground=WHITE,
+            background=WHITE,
+            foreground=TEXT,
+            borderwidth=0,
+            padding=12,
+            font=("Segoe UI", 12)
+        )
+
+        style.configure(
+            "Login.TButton",
+            background=TEAL,
+            foreground=WHITE,
+            font=("Segoe UI Semibold", 12),
+            borderwidth=0,
+            padding=12
+        )
+
+        style.map(
+            "Login.TButton",
+            background=[
+                ("active", TEAL_DARK),
+                ("pressed", TEAL_DARK)
+            ]
+        )
+
+    # --------------------------------------------------------
+    # LOGIN UI
+    # --------------------------------------------------------
+
+    def build_login(self):
+
+        main = tk.Frame(
+            self.window,
+            bg=BG
+        )
+        main.pack(fill="both", expand=True)
+
+        # Left branding section
+        left = tk.Frame(
+            main,
+            bg=NAVY,
+            width=500
+        )
+        left.pack(side="left", fill="y")
+        left.pack_propagate(False)
+
+        # Decorative circle
+        circle = tk.Canvas(
+            left,
+            bg=NAVY,
+            highlightthickness=0
+        )
+        circle.pack(fill="both", expand=True)
+
+        circle.create_oval(
+            -100, -100, 330, 330,
+            fill=NAVY_2,
+            outline=""
+        )
+
+        circle.create_oval(
+            300, 500, 700, 900,
+            fill=TEAL_DARK,
+            outline=""
+        )
+
+        circle.create_text(
+            55,
+            185,
+            anchor="w",
+            text="✚",
+            fill=TEAL,
+            font=("Segoe UI", 54, "bold")
+        )
+
+        circle.create_text(
+            55,
+            270,
+            anchor="w",
+            text="MediCare",
+            fill=WHITE,
+            font=("Segoe UI", 34, "bold")
+        )
+
+        circle.create_text(
+            58,
+            325,
+            anchor="w",
+            text="Hospital Management",
+            fill="#B8C7D9",
+            font=("Segoe UI", 15)
+        )
+
+        circle.create_text(
+            58,
+            370,
+            anchor="w",
+            text="Smart • Simple • Secure",
+            fill=TEAL,
+            font=("Segoe UI Semibold", 13)
+        )
+
+        # Right login area
+        right = tk.Frame(
+            main,
+            bg=BG
+        )
+        right.pack(
+            side="right",
+            fill="both",
+            expand=True
+        )
+
+        card = tk.Frame(
+            right,
+            bg=CARD,
+            highlightbackground=BORDER,
+            highlightthickness=1
+        )
+        card.place(
+            relx=0.5,
+            rely=0.5,
+            anchor="center",
+            width=430,
+            height=470
+        )
+
+        tk.Label(
+            card,
+            text="Welcome back",
+            bg=CARD,
+            fg=NAVY,
+            font=("Segoe UI", 27, "bold")
+        ).pack(
+            pady=(50, 5)
+        )
+
+        tk.Label(
+            card,
+            text="Sign in to access your hospital dashboard",
+            bg=CARD,
+            fg=MUTED,
+            font=("Segoe UI", 10)
+        ).pack(
+            pady=(0, 35)
+        )
+
+        # Username
+        tk.Label(
+            card,
+            text="USERNAME",
+            bg=CARD,
+            fg=TEXT,
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            anchor="w",
+            padx=45
+        )
+
+        self.usernameEntry = ttk.Entry(
+            card,
+            style="Login.TEntry"
+        )
+        self.usernameEntry.pack(
+            fill="x",
+            padx=45,
+            pady=(7, 20)
+        )
+
+        # Password
+        tk.Label(
+            card,
+            text="PASSWORD",
+            bg=CARD,
+            fg=TEXT,
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            anchor="w",
+            padx=45
+        )
+
+        self.passwordEntry = ttk.Entry(
+            card,
+            style="Login.TEntry",
+            show="●"
+        )
+        self.passwordEntry.pack(
+            fill="x",
+            padx=45,
+            pady=(7, 25)
+        )
+
+        self.loginButton = ttk.Button(
+            card,
+            text="SIGN IN  →",
+            style="Login.TButton",
+            command=self.login
+        )
+        self.loginButton.pack(
+            fill="x",
+            padx=45,
+            pady=5
+        )
+
+        tk.Label(
+            card,
+            text="Demo access: admin / password123",
+            bg=CARD,
+            fg=MUTED,
+            font=("Segoe UI", 9)
+        ).pack(
+            pady=(20, 0)
+        )
+
+        self.usernameEntry.focus()
+
+        self.window.bind(
+            "<Return>",
+            lambda event: self.login()
+        )
+
+    # --------------------------------------------------------
+    # LOGIN
+    # --------------------------------------------------------
 
     def login(self):
-        username = self.usernameEntry.get()
+
+        username = self.usernameEntry.get().strip()
         password = self.passwordEntry.get()
 
-        # Validate credentials
         if username == USERNAME and password == PASSWORD:
-            messagebox.showinfo("Login Success", "Welcome to the system!")
-            self.window.destroy()  # Close the login window
-            self.open_hospital_management()  # Open the hospital management window
+
+            messagebox.showinfo(
+                "Login Successful",
+                "Welcome to the MediCare Hospital Dashboard."
+            )
+
+            self.window.destroy()
+
+            new_root = tk.Tk()
+            HospitalManagement(new_root)
+            new_root.mainloop()
+
         else:
-            messagebox.showerror("Login Failed", "Invalid username or password.")
 
-    def open_hospital_management(self):
-        # Create a new root window for the hospital management system
-        new_root = tk.Tk()
-        HospitalManagement(new_root)
-        new_root.mainloop()  # Start the new mainloop for the hospital management window
+            messagebox.showerror(
+                "Login Failed",
+                "Invalid username or password."
+            )
 
+            self.passwordEntry.delete(0, tk.END)
+            self.passwordEntry.focus()
+
+
+# ============================================================
+# HOSPITAL MANAGEMENT
+# ============================================================
 
 class HospitalManagement:
+
     def __init__(self, root):
+
         self.root = root
-        self.root.title("Hospital Management System")
-        self.root.geometry("1540x800+0+0")
-        # Variables
-        self.Nametable = StringVar()
-        self.ref = StringVar()
-        self.Dose = StringVar()
-        self.nooftab = StringVar()
-        self.lot = StringVar()
-        self.issuedate = StringVar()
-        self.issuedate1 = StringVar()
-        self.DDose = StringVar()
-        self.SE = StringVar()
-        self.info = StringVar()
-        self.BP = StringVar()
-        self.StorageAdvice = StringVar()
-        self.Medication = StringVar()
-        self.PatientID = StringVar()
-        self.NHS = StringVar()
-        self.PatientName = StringVar()
-        self.DOB = StringVar()
-        self.Address = StringVar()
-        
-        # Title Label
-        lbltitle = Label(self.root, bd=20, relief=RIDGE, text="HOSPITAL MANAGEMENT SYSTEM", fg="red", bg="white", font=("times new roman", 40, "bold"))
-        lbltitle.pack(side=TOP, fill=X)
 
-        # Dataframes
-        Dataframe = Frame(self.root, bd=20, relief=RIDGE)
-        Dataframe.place(x=0, y=120, width=1530, height=400)
+        self.root.title(
+            "MediCare | Hospital Management Dashboard"
+        )
 
-        DataframeLeft = LabelFrame(Dataframe, bd=10, relief=RIDGE, padx=10, font=("times new roman", 12, "bold"), text="Patient Information")
-        DataframeLeft.place(x=0, y=5, width=980, height=350)
+        self.root.geometry("1500x850")
+        self.root.minsize(1150, 700)
 
-        DataframeRight = LabelFrame(Dataframe, bd=10, relief=RIDGE, padx=10, font=("times new roman", 12, "bold"), text="Prescription")
-        DataframeRight.place(x=990, y=5, width=460, height=350)
+        self.root.configure(bg=BG)
 
-        # Button Frame
-        Buttonframe = Frame(self.root, bd=20, relief=RIDGE)
-        Buttonframe.place(x=0, y=530, width=1530, height=70)
-
-        # Details Frame
-        Detailsframe = Frame(self.root, bd=20, relief=RIDGE)
-        Detailsframe.place(x=0, y=600, width=1530, height=190)
-        # Labels and Entries for patient info
-        lblNameTable = Label(DataframeLeft, text="Names of Tablets", font=("times new roman", 12, "bold"), padx=2, pady=6)
-        lblNameTable.grid(row=0, column=0)
-
-        comNameTable = ttk.Combobox(DataframeLeft, textvariable=self.Nametable, state="readonly", font=("times new roman", 12, "bold"), width=33)
-        comNameTable["values"] = ("abc", "efg", "eif", "fhu", "fgj", "hjg")
-        comNameTable.current(0)
-        comNameTable.grid(row=0, column=1)
-
-        lblref = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Reference no.", padx=2)
-        lblref.grid(row=1, column=0, sticky=W)
-        txtref = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.ref, width=35)
-        txtref.grid(row=1, column=1)
-
-        lblDose = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Dose", padx=2, pady=4)
-        lblDose.grid(row=2, column=0, sticky=W)
-        txtDose = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.Dose, width=35)
-        txtDose.grid(row=2, column=1)
-
-        lblnooftab = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="No of tablets", padx=2, pady=6)
-        lblnooftab.grid(row=3, column=0, sticky=W)
-        txtnooftab = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.nooftab, width=35)
-        txtnooftab.grid(row=3, column=1)
-
-        lbllot = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Lot:", padx=2, pady=6)
-        lbllot.grid(row=4, column=0, sticky=W)
-        txtlot = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.lot, width=35)
-        txtlot.grid(row=4, column=1)
-
-        lblissuedate = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Issue date:", padx=2, pady=6)
-        lblissuedate.grid(row=5, column=0, sticky=W)
-        txtissuedate = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.issuedate, width=35)
-        txtissuedate.grid(row=5, column=1)
-
-        lblissuedate1 = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Expiry date:", padx=2, pady=6)
-        lblissuedate1.grid(row=6, column=0, sticky=W)
-        txtissuedate1 = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.issuedate1, width=35)
-        txtissuedate1.grid(row=6, column=1)
-
-        lblDDose = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Daily Dose", padx=2, pady=4)
-        lblDDose.grid(row=7, column=0, sticky=W)
-        txtDDose = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.DDose, width=35)
-        txtDDose.grid(row=7, column=1)
-
-        lblSE = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Side Effect", padx=2, pady=4)
-        lblSE.grid(row=8, column=0, sticky=W)
-        txtSE = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.SE, width=35)
-        txtSE.grid(row=8, column=1)
-
-        # New fields
-        lblinfo = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Further Information", padx=2)
-        lblinfo.grid(row=0, column=2, sticky=W)
-        txtinfo = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.info, width=35)
-        txtinfo.grid(row=0, column=3)
-
-        lblBP = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Blood Pressure", padx=2, pady=6)
-        lblBP.grid(row=1, column=2, sticky=W)
-        txtBP = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.BP, width=35)
-        txtBP.grid(row=1, column=3)
-
-        lblStorageAdvice = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Storage Advice", padx=2, pady=6)
-        lblStorageAdvice.grid(row=2, column=2, sticky=W)
-        txtStorageAdvice = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.StorageAdvice, width=35)
-        txtStorageAdvice.grid(row=2, column=3)
-
-        lblMedication = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Medication", padx=2, pady=6)
-        lblMedication.grid(row=3, column=2, sticky=W)
-        txtMedication = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.Medication, width=35)
-        txtMedication.grid(row=3, column=3)
-
-        lblPatientID = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Patient ID", padx=2, pady=6)
-        lblPatientID.grid(row=4, column=2, sticky=W)
-        txtPatientID = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.PatientID, width=35)
-        txtPatientID.grid(row=4, column=3)
-
-        lblNHS = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="NHS Number", padx=2, pady=6)
-        lblNHS.grid(row=5, column=2, sticky=W)
-        txtNHS = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.NHS, width=35)
-        txtNHS.grid(row=5, column=3)
-
-        lblPatientName = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Patient Name", padx=2, pady=6)
-        lblPatientName.grid(row=6, column=2, sticky=W)
-        txtPatientName = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.PatientName, width=35)
-        txtPatientName.grid(row=6, column=3)
-
-        lblDOB = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Date of Birth", padx=2, pady=6)
-        lblDOB.grid(row=7, column=2, sticky=W)
-        txtDOB = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.DOB, width=35)
-        txtDOB.grid(row=7, column=3)
-
-        lblAddress = Label(DataframeLeft, font=("times new roman", 12, "bold"), text="Patient Address", padx=2, pady=6)
-        lblAddress.grid(row=8, column=2, sticky=W)
-        txtAddress = Entry(DataframeLeft, font=("times new roman", 13, "bold"), textvariable=self.Address, width=35)
-        txtAddress.grid(row=8, column=3)
-
-
-        self.txtPrescription = Text(DataframeRight, font=("arial", 12, "bold"), width=43, height=16, padx=2, pady=6)
-        self.txtPrescription.grid(row=0, column=0)
-
-        # Button Widgets
-        btnPData = Button(Buttonframe, text="Prescription Data", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6,command=self.iPrescriptionData)
-        btnPData.grid(row=0, column=1)
-
-        btnPrescription = Button(Buttonframe, text="Prescription", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6,command=self.iPrescription)
-        btnPrescription.grid(row=0, column=0)
-
-        btnDelete = Button(Buttonframe, text="Delete", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6,command=self.idelete)
-        btnDelete.grid(row=0, column=2)
-
-        btnClear = Button(Buttonframe, text="Clear", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6,command=self.iclear)
-        btnClear.grid(row=0, column=3)
-
-        btnUpdate = Button(Buttonframe, text="Update", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6,command=self.update)
-        btnUpdate.grid(row=0, column=4)
-
-        btnexit = Button(Buttonframe, text="Exit", bg="green", fg="white", font=("times new roman", 12, "bold"), width=27, padx=2, pady=6, command=self.root.quit)
-        btnexit.grid(row=0, column=5)
-
-                # Table for details
-
-        
-        scroll_x = ttk.Scrollbar(Detailsframe, orient=HORIZONTAL)
-        scroll_y = ttk.Scrollbar(Detailsframe, orient=VERTICAL)
-        self.hospital_table = ttk.Treeview(Detailsframe, column=("Nametable", "ref", "Dose", "nooftab", "lot", "issuedate", "issuedate1", "DDose", "SE", "info", "BP", "StorageAdvice", "Medication", "PatientID", "NHS", "PatientName", "DOB", "Address"), xscrollcommand=scroll_x.set, yscrollcommand=scroll_y.set)
-        scroll_x.pack(side=BOTTOM, fill=X)
-        scroll_y.pack(side=RIGHT, fill=Y)
-        scroll_x.config(command=self.hospital_table.xview)
-        scroll_y.config(command=self.hospital_table.yview)
-
-        self.hospital_table.heading("Nametable", text="Name of Tablets")
-        self.hospital_table.heading("ref", text="Reference No.")
-        self.hospital_table.heading("Dose", text="Dose")
-        self.hospital_table.heading("nooftab", text="No of Tablets")
-        self.hospital_table.heading("lot", text="Lot")
-        self.hospital_table.heading("issuedate", text="Issue Date")
-        self.hospital_table.heading("issuedate1", text="Expiry Date")
-        self.hospital_table.heading("DDose", text="Daily Dose")
-        self.hospital_table.heading("StorageAdvice", text="Storage Advice")
-        self.hospital_table.heading("NHS", text="NHS Number")
-        self.hospital_table.heading("PatientName", text="Patient Name")
-        self.hospital_table.heading("DOB", text="DOB")
-        self.hospital_table.heading("Address", text="Patient Address")
-        self.hospital_table.heading("SE", text="Side Effects")
-        self.hospital_table.heading("info", text="Additional Info")
-        self.hospital_table.heading("BP", text="Blood Pressure")
-        self.hospital_table.heading("Medication", text="Medication Info")
-        self.hospital_table.heading("PatientID", text="Patient ID")
-
-
-        self.hospital_table["show"] = "headings"
-
-        self.hospital_table.column("Nametable", width=100)
-        self.hospital_table.column("ref", width=100)
-        self.hospital_table.column("Dose", width=100)
-        self.hospital_table.column("nooftab", width=100)
-        self.hospital_table.column("lot", width=100)
-        self.hospital_table.column("issuedate", width=100)
-        self.hospital_table.column("issuedate1", width=100)
-        self.hospital_table.column("DDose", width=100)
-        self.hospital_table.column("StorageAdvice", width=100)
-        self.hospital_table.column("NHS", width=100)
-        self.hospital_table.column("PatientName", width=100)
-        self.hospital_table.column("DOB", width=100)
-        self.hospital_table.column("Address", width=100)
-        self.hospital_table.column("SE", width=100)
-        self.hospital_table.column("info", width=100)
-        self.hospital_table.column("BP", width=100)
-        self.hospital_table.column("Medication", width=100)
-        self.hospital_table.column("PatientID", width=100)
-
-
-        self.hospital_table.pack(fill=BOTH, expand=1)
-        self.hospital_table.bind("<ButtonRelease-1>", self.get_cursor)
+        self.create_variables()
+        self.setup_styles()
+        self.build_interface()
 
         self.fetch_data()
 
-    # Prescription Data Function
+    # --------------------------------------------------------
+    # VARIABLES
+    # --------------------------------------------------------
+
+    def create_variables(self):
+
+        self.Nametable = tk.StringVar()
+        self.ref = tk.StringVar()
+        self.Dose = tk.StringVar()
+        self.nooftab = tk.StringVar()
+        self.lot = tk.StringVar()
+        self.issuedate = tk.StringVar()
+        self.issuedate1 = tk.StringVar()
+        self.DDose = tk.StringVar()
+        self.SE = tk.StringVar()
+        self.info = tk.StringVar()
+        self.BP = tk.StringVar()
+        self.StorageAdvice = tk.StringVar()
+        self.Medication = tk.StringVar()
+        self.PatientID = tk.StringVar()
+        self.NHS = tk.StringVar()
+        self.PatientName = tk.StringVar()
+        self.DOB = tk.StringVar()
+        self.Address = tk.StringVar()
+
+        self.status_text = tk.StringVar(
+            value="Ready"
+        )
+
+    # --------------------------------------------------------
+    # STYLES
+    # --------------------------------------------------------
+
+    def setup_styles(self):
+
+        style = ttk.Style()
+
+        try:
+            style.theme_use("clam")
+        except:
+            pass
+
+        style.configure(
+            "Modern.TEntry",
+            fieldbackground=WHITE,
+            background=WHITE,
+            foreground=TEXT,
+            bordercolor=BORDER,
+            lightcolor=BORDER,
+            darkcolor=BORDER,
+            padding=8,
+            font=("Segoe UI", 10)
+        )
+
+        style.configure(
+            "Modern.TCombobox",
+            fieldbackground=WHITE,
+            background=WHITE,
+            foreground=TEXT,
+            bordercolor=BORDER,
+            padding=7,
+            font=("Segoe UI", 10)
+        )
+
+        style.configure(
+            "Modern.Treeview",
+            background=WHITE,
+            fieldbackground=WHITE,
+            foreground=TEXT,
+            rowheight=34,
+            borderwidth=0,
+            font=("Segoe UI", 9)
+        )
+
+        style.configure(
+            "Modern.Treeview.Heading",
+            background=NAVY,
+            foreground=WHITE,
+            font=("Segoe UI Semibold", 9),
+            padding=10
+        )
+
+        style.map(
+            "Modern.Treeview",
+            background=[
+                ("selected", TEAL)
+            ],
+            foreground=[
+                ("selected", WHITE)
+            ]
+        )
+
+    # --------------------------------------------------------
+    # MAIN INTERFACE
+    # --------------------------------------------------------
+
+    def build_interface(self):
+
+        self.build_topbar()
+
+        self.build_sidebar()
+
+        self.build_content()
+
+        self.build_statusbar()
+
+    # --------------------------------------------------------
+    # TOP BAR
+    # --------------------------------------------------------
+
+    def build_topbar(self):
+
+        top = tk.Frame(
+            self.root,
+            bg=WHITE,
+            height=75
+        )
+        top.pack(
+            side="top",
+            fill="x"
+        )
+        top.pack_propagate(False)
+
+        tk.Label(
+            top,
+            text="MediCare",
+            bg=WHITE,
+            fg=NAVY,
+            font=("Segoe UI", 21, "bold")
+        ).pack(
+            side="left",
+            padx=(30, 5)
+        )
+
+        tk.Label(
+            top,
+            text="Hospital Management",
+            bg=WHITE,
+            fg=TEAL,
+            font=("Segoe UI Semibold", 10)
+        ).pack(
+            side="left",
+            pady=(10, 0)
+        )
+
+        # Right side
+        profile = tk.Frame(
+            top,
+            bg=WHITE
+        )
+        profile.pack(
+            side="right",
+            padx=30
+        )
+
+        tk.Label(
+            profile,
+            text="●",
+            bg=WHITE,
+            fg=GREEN,
+            font=("Segoe UI", 15)
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        tk.Label(
+            profile,
+            text="Administrator",
+            bg=WHITE,
+            fg=TEXT,
+            font=("Segoe UI Semibold", 10)
+        ).pack(
+            side="left"
+        )
+
+    # --------------------------------------------------------
+    # SIDEBAR
+    # --------------------------------------------------------
+
+    def build_sidebar(self):
+
+        self.sidebar = tk.Frame(
+            self.root,
+            bg=NAVY,
+            width=220
+        )
+
+        self.sidebar.pack(
+            side="left",
+            fill="y"
+        )
+
+        self.sidebar.pack_propagate(False)
+
+        tk.Label(
+            self.sidebar,
+            text="WORKSPACE",
+            bg=NAVY,
+            fg="#829AB1",
+            font=("Segoe UI Semibold", 8)
+        ).pack(
+            anchor="w",
+            padx=25,
+            pady=(35, 15)
+        )
+
+        self.sidebar_button(
+            "▣   Dashboard",
+            self.show_dashboard,
+            active=True
+        )
+
+        self.sidebar_button(
+            "♙   Patient Records",
+            self.show_records
+        )
+
+        self.sidebar_button(
+            "▤   Prescription",
+            self.show_prescription
+        )
+
+        self.sidebar_button(
+            "⚙   System",
+            self.show_system
+        )
+
+        # Bottom information
+        bottom = tk.Frame(
+            self.sidebar,
+            bg=NAVY
+        )
+        bottom.pack(
+            side="bottom",
+            fill="x",
+            padx=20,
+            pady=25
+        )
+
+        tk.Label(
+            bottom,
+            text="DATABASE",
+            bg=NAVY,
+            fg="#829AB1",
+            font=("Segoe UI Semibold", 8)
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            bottom,
+            text="●  MySQL Connected",
+            bg=NAVY,
+            fg="#6EE7B7",
+            font=("Segoe UI", 9)
+        ).pack(
+            anchor="w",
+            pady=(5, 0)
+        )
+
+    def sidebar_button(
+        self,
+        text,
+        command,
+        active=False
+    ):
+
+        bg = TEAL if active else NAVY
+
+        button = tk.Button(
+            self.sidebar,
+            text=text,
+            command=command,
+            bg=bg,
+            fg=WHITE,
+            activebackground=TEAL_DARK,
+            activeforeground=WHITE,
+            relief="flat",
+            bd=0,
+            anchor="w",
+            padx=25,
+            font=("Segoe UI Semibold", 10),
+            cursor="hand2"
+        )
+
+        button.pack(
+            fill="x",
+            ipady=12,
+            pady=2
+        )
+
+    # --------------------------------------------------------
+    # CONTENT
+    # --------------------------------------------------------
+
+    def build_content(self):
+
+        self.content = tk.Frame(
+            self.root,
+            bg=BG
+        )
+
+        self.content.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        self.build_dashboard()
+
+    # --------------------------------------------------------
+    # DASHBOARD
+    # --------------------------------------------------------
+
+    def build_dashboard(self):
+
+        self.clear_content()
+
+        # Header
+        header = tk.Frame(
+            self.content,
+            bg=BG
+        )
+        header.pack(
+            fill="x",
+            padx=30,
+            pady=(25, 15)
+        )
+
+        tk.Label(
+            header,
+            text="Patient Management",
+            bg=BG,
+            fg=NAVY,
+            font=("Segoe UI", 25, "bold")
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            header,
+            text="Manage patient prescriptions and medical records",
+            bg=BG,
+            fg=MUTED,
+            font=("Segoe UI", 10)
+        ).pack(
+            anchor="w",
+            pady=(3, 0)
+        )
+
+        # Main form card
+        card = tk.Frame(
+            self.content,
+            bg=CARD,
+            highlightbackground=BORDER,
+            highlightthickness=1
+        )
+
+        card.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=(0, 20)
+        )
+
+        # Notebook
+        notebook = ttk.Notebook(card)
+        notebook.pack(
+            fill="both",
+            expand=True,
+            padx=15,
+            pady=15
+        )
+
+        patient_tab = tk.Frame(
+            notebook,
+            bg=CARD
+        )
+
+        prescription_tab = tk.Frame(
+            notebook,
+            bg=CARD
+        )
+
+        notebook.add(
+            patient_tab,
+            text="  Patient & Medicine  "
+        )
+
+        notebook.add(
+            prescription_tab,
+            text="  Prescription Preview  "
+        )
+
+        self.build_patient_form(patient_tab)
+        self.build_prescription_tab(prescription_tab)
+
+        # Buttons
+        self.build_action_buttons(card)
+
+    # --------------------------------------------------------
+    # PATIENT FORM
+    # --------------------------------------------------------
+
+    def build_patient_form(self, parent):
+
+        # Scrollable canvas
+        canvas = tk.Canvas(
+            parent,
+            bg=CARD,
+            highlightthickness=0
+        )
+
+        scrollbar = ttk.Scrollbar(
+            parent,
+            orient="vertical",
+            command=canvas.yview
+        )
+
+        form = tk.Frame(
+            canvas,
+            bg=CARD
+        )
+
+        form.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window(
+            (0, 0),
+            window=form,
+            anchor="nw"
+        )
+
+        canvas.configure(
+            yscrollcommand=scrollbar.set
+        )
+
+        canvas.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        scrollbar.pack(
+            side="right",
+            fill="y"
+        )
+
+        # Make columns stretch
+        form.grid_columnconfigure(1, weight=1)
+        form.grid_columnconfigure(3, weight=1)
+
+        # Section
+        self.section_title(
+            form,
+            "PATIENT DETAILS",
+            0
+        )
+
+        self.add_field(
+            form,
+            "Patient ID",
+            self.PatientID,
+            1,
+            0,
+            required=True
+        )
+
+        self.add_field(
+            form,
+            "Patient Name",
+            self.PatientName,
+            1,
+            2
+        )
+
+        self.add_field(
+            form,
+            "NHS Number",
+            self.NHS,
+            2,
+            0
+        )
+
+        self.add_field(
+            form,
+            "Date of Birth",
+            self.DOB,
+            2,
+            2,
+            placeholder="DD-MM-YYYY"
+        )
+
+        self.add_field(
+            form,
+            "Blood Pressure",
+            self.BP,
+            3,
+            0,
+            placeholder="120/80"
+        )
+
+        self.add_field(
+            form,
+            "Address",
+            self.Address,
+            3,
+            2
+        )
+
+        # Medicine
+        self.section_title(
+            form,
+            "MEDICATION DETAILS",
+            4
+        )
+
+        self.add_combobox(
+            form,
+            "Name of Tablets",
+            self.Nametable,
+            5,
+            0
+        )
+
+        self.add_field(
+            form,
+            "Reference No.",
+            self.ref,
+            5,
+            2
+        )
+
+        self.add_field(
+            form,
+            "Dose",
+            self.Dose,
+            6,
+            0,
+            placeholder="e.g. 500 mg"
+        )
+
+        self.add_field(
+            form,
+            "No. of Tablets",
+            self.nooftab,
+            6,
+            2
+        )
+
+        self.add_field(
+            form,
+            "Lot Number",
+            self.lot,
+            7,
+            0
+        )
+
+        self.add_field(
+            form,
+            "Daily Dose",
+            self.DDose,
+            7,
+            2
+        )
+
+        # Dates
+        self.add_field(
+            form,
+            "Issue Date",
+            self.issuedate,
+            8,
+            0,
+            placeholder="DD-MM-YYYY"
+        )
+
+        self.add_field(
+            form,
+            "Expiry Date",
+            self.issuedate1,
+            8,
+            2,
+            placeholder="DD-MM-YYYY"
+        )
+
+        # Additional
+        self.section_title(
+            form,
+            "MEDICAL INFORMATION",
+            9
+        )
+
+        self.add_field(
+            form,
+            "Medication Info",
+            self.Medication,
+            10,
+            0
+        )
+
+        self.add_field(
+            form,
+            "Side Effects",
+            self.SE,
+            10,
+            2
+        )
+
+        self.add_field(
+            form,
+            "Storage Advice",
+            self.StorageAdvice,
+            11,
+            0
+        )
+
+        self.add_field(
+            form,
+            "Further Information",
+            self.info,
+            11,
+            2
+        )
+
+    # --------------------------------------------------------
+    # SECTION TITLE
+    # --------------------------------------------------------
+
+    def section_title(
+        self,
+        parent,
+        text,
+        row
+    ):
+
+        frame = tk.Frame(
+            parent,
+            bg=CARD
+        )
+
+        frame.grid(
+            row=row,
+            column=0,
+            columnspan=4,
+            sticky="ew",
+            padx=20,
+            pady=(18, 10)
+        )
+
+        tk.Frame(
+            frame,
+            bg=TEAL,
+            width=4,
+            height=24
+        ).pack(
+            side="left",
+            padx=(0, 10)
+        )
+
+        tk.Label(
+            frame,
+            text=text,
+            bg=CARD,
+            fg=NAVY,
+            font=("Segoe UI Semibold", 10)
+        ).pack(
+            side="left"
+        )
+
+    # --------------------------------------------------------
+    # FIELD
+    # --------------------------------------------------------
+
+    def add_field(
+        self,
+        parent,
+        label,
+        variable,
+        row,
+        column,
+        placeholder=""
+    ):
+
+        container = tk.Frame(
+            parent,
+            bg=CARD
+        )
+
+        container.grid(
+            row=row,
+            column=column,
+            sticky="ew",
+            padx=20,
+            pady=7
+        )
+
+        tk.Label(
+            container,
+            text=label,
+            bg=CARD,
+            fg=TEXT,
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            anchor="w"
+        )
+
+        entry = ttk.Entry(
+            container,
+            textvariable=variable,
+            style="Modern.TEntry"
+        )
+
+        entry.pack(
+            fill="x",
+            pady=(5, 0)
+        )
+
+        if placeholder:
+
+            # Small helper text
+            tk.Label(
+                container,
+                text=placeholder,
+                bg=CARD,
+                fg=MUTED,
+                font=("Segoe UI", 7)
+            ).pack(
+                anchor="w"
+            )
+
+    # --------------------------------------------------------
+    # COMBOBOX
+    # --------------------------------------------------------
+
+    def add_combobox(
+        self,
+        parent,
+        label,
+        variable,
+        row,
+        column
+    ):
+
+        container = tk.Frame(
+            parent,
+            bg=CARD
+        )
+
+        container.grid(
+            row=row,
+            column=column,
+            sticky="ew",
+            padx=20,
+            pady=7
+        )
+
+        tk.Label(
+            container,
+            text=label,
+            bg=CARD,
+            fg=TEXT,
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            anchor="w"
+        )
+
+        combo = ttk.Combobox(
+            container,
+            textvariable=variable,
+            state="normal",
+            style="Modern.TCombobox",
+            values=(
+                "Paracetamol",
+                "Amoxicillin",
+                "Azithromycin",
+                "Ibuprofen",
+                "Cetirizine",
+                "Omeprazole",
+                "Metformin",
+                "Aspirin"
+            )
+        )
+
+        combo.pack(
+            fill="x",
+            pady=(5, 0)
+        )
+
+    # --------------------------------------------------------
+    # PRESCRIPTION TAB
+    # --------------------------------------------------------
+
+    def build_prescription_tab(self, parent):
+
+        parent.grid_rowconfigure(
+            0,
+            weight=1
+        )
+
+        parent.grid_columnconfigure(
+            0,
+            weight=1
+        )
+
+        wrapper = tk.Frame(
+            parent,
+            bg=LIGHT_TEAL
+        )
+
+        wrapper.grid(
+            row=0,
+            column=0,
+            sticky="nsew",
+            padx=30,
+            pady=30
+        )
+
+        tk.Label(
+            wrapper,
+            text="PRESCRIPTION",
+            bg=LIGHT_TEAL,
+            fg=TEAL_DARK,
+            font=("Segoe UI Semibold", 11)
+        ).pack(
+            anchor="w",
+            padx=25,
+            pady=(20, 5)
+        )
+
+        tk.Label(
+            wrapper,
+            text="Digital Medical Prescription",
+            bg=LIGHT_TEAL,
+            fg=NAVY,
+            font=("Segoe UI", 20, "bold")
+        ).pack(
+            anchor="w",
+            padx=25
+        )
+
+        tk.Frame(
+            wrapper,
+            bg=TEAL,
+            height=2
+        ).pack(
+            fill="x",
+            padx=25,
+            pady=15
+        )
+
+        self.txtPrescription = tk.Text(
+            wrapper,
+            bg=WHITE,
+            fg=TEXT,
+            font=("Consolas", 10),
+            relief="flat",
+            bd=0,
+            padx=20,
+            pady=20,
+            wrap="word"
+        )
+
+        self.txtPrescription.pack(
+            fill="both",
+            expand=True,
+            padx=25,
+            pady=(0, 25)
+        )
+
+        self.txtPrescription.insert(
+            "1.0",
+            "Select patient information and click\n"
+            "\"Generate Prescription\" to preview it here."
+        )
+
+        self.txtPrescription.config(
+            state="disabled"
+        )
+
+    # --------------------------------------------------------
+    # ACTION BUTTONS
+    # --------------------------------------------------------
+
+    def build_action_buttons(self, parent):
+
+        button_frame = tk.Frame(
+            parent,
+            bg=CARD
+        )
+
+        button_frame.pack(
+            fill="x",
+            padx=20,
+            pady=(0, 15)
+        )
+
+        self.modern_button(
+            button_frame,
+            "Generate Prescription",
+            self.iPrescription,
+            TEAL
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        self.modern_button(
+            button_frame,
+            "Save Record",
+            self.iPrescriptionData,
+            NAVY
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        self.modern_button(
+            button_frame,
+            "Update",
+            self.update,
+            ORANGE
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        self.modern_button(
+            button_frame,
+            "Clear",
+            self.iclear,
+            "#64748B"
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        self.modern_button(
+            button_frame,
+            "Delete / Clear",
+            self.idelete,
+            RED
+        ).pack(
+            side="left",
+            padx=5
+        )
+
+        self.modern_button(
+            button_frame,
+            "Exit",
+            self.root.quit,
+            "#334E68"
+        ).pack(
+            side="right",
+            padx=5
+        )
+
+    def modern_button(
+        self,
+        parent,
+        text,
+        command,
+        color
+    ):
+
+        return tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=color,
+            fg=WHITE,
+            activebackground=color,
+            activeforeground=WHITE,
+            relief="flat",
+            bd=0,
+            padx=18,
+            pady=9,
+            cursor="hand2",
+            font=("Segoe UI Semibold", 9)
+        )
+
+    # --------------------------------------------------------
+    # RECORDS PAGE
+    # --------------------------------------------------------
+
+    def show_records(self):
+
+        self.clear_content()
+
+        header = tk.Frame(
+            self.content,
+            bg=BG
+        )
+
+        header.pack(
+            fill="x",
+            padx=30,
+            pady=25
+        )
+
+        tk.Label(
+            header,
+            text="Patient Records",
+            bg=BG,
+            fg=NAVY,
+            font=("Segoe UI", 25, "bold")
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            header,
+            text="View all saved medical records from MySQL",
+            bg=BG,
+            fg=MUTED,
+            font=("Segoe UI", 10)
+        ).pack(
+            anchor="w",
+            pady=3
+        )
+
+        card = tk.Frame(
+            self.content,
+            bg=CARD,
+            highlightbackground=BORDER,
+            highlightthickness=1
+        )
+
+        card.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=(0, 30)
+        )
+
+        # Search area
+        search = tk.Frame(
+            card,
+            bg=CARD
+        )
+
+        search.pack(
+            fill="x",
+            padx=20,
+            pady=20
+        )
+
+        tk.Label(
+            search,
+            text="Records",
+            bg=CARD,
+            fg=NAVY,
+            font=("Segoe UI Semibold", 12)
+        ).pack(
+            side="left"
+        )
+
+        tk.Button(
+            search,
+            text="↻ Refresh",
+            command=self.fetch_data,
+            bg=TEAL,
+            fg=WHITE,
+            relief="flat",
+            bd=0,
+            padx=15,
+            pady=7,
+            cursor="hand2",
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            side="right"
+        )
+
+        self.create_table(card)
+
+        self.fetch_data()
+
+    # --------------------------------------------------------
+    # CREATE TABLE
+    # --------------------------------------------------------
+
+    def create_table(self, parent):
+
+        table_frame = tk.Frame(
+            parent,
+            bg=CARD
+        )
+
+        table_frame.pack(
+            fill="both",
+            expand=True,
+            padx=20,
+            pady=(0, 20)
+        )
+
+        columns = (
+            "Nametable",
+            "ref",
+            "Dose",
+            "nooftab",
+            "lot",
+            "issuedate",
+            "issuedate1",
+            "DDose",
+            "SE",
+            "info",
+            "BP",
+            "Medication",
+            "PatientID",
+            "NHS",
+            "PatientName",
+            "DOB",
+            "Address",
+            "StorageAdvice"
+        )
+
+        x_scroll = ttk.Scrollbar(
+            table_frame,
+            orient="horizontal"
+        )
+
+        y_scroll = ttk.Scrollbar(
+            table_frame,
+            orient="vertical"
+        )
+
+        self.hospital_table = ttk.Treeview(
+            table_frame,
+            columns=columns,
+            show="headings",
+            style="Modern.Treeview",
+            xscrollcommand=x_scroll.set,
+            yscrollcommand=y_scroll.set
+        )
+
+        x_scroll.config(
+            command=self.hospital_table.xview
+        )
+
+        y_scroll.config(
+            command=self.hospital_table.yview
+        )
+
+        x_scroll.pack(
+            side="bottom",
+            fill="x"
+        )
+
+        y_scroll.pack(
+            side="right",
+            fill="y"
+        )
+
+        self.hospital_table.pack(
+            fill="both",
+            expand=True
+        )
+
+        headings = {
+            "Nametable": "Tablet",
+            "ref": "Reference",
+            "Dose": "Dose",
+            "nooftab": "Tablets",
+            "lot": "Lot",
+            "issuedate": "Issue Date",
+            "issuedate1": "Expiry",
+            "DDose": "Daily Dose",
+            "SE": "Side Effects",
+            "info": "Information",
+            "BP": "Blood Pressure",
+            "Medication": "Medication",
+            "PatientID": "Patient ID",
+            "NHS": "NHS No.",
+            "PatientName": "Patient Name",
+            "DOB": "DOB",
+            "Address": "Address",
+            "StorageAdvice": "Storage"
+        }
+
+        for column in columns:
+
+            self.hospital_table.heading(
+                column,
+                text=headings[column]
+            )
+
+            self.hospital_table.column(
+                column,
+                width=120,
+                minwidth=90
+            )
+
+        self.hospital_table.column(
+            "PatientName",
+            width=160
+        )
+
+        self.hospital_table.column(
+            "Address",
+            width=220
+        )
+
+        self.hospital_table.bind(
+            "<ButtonRelease-1>",
+            self.get_cursor
+        )
+
+    # --------------------------------------------------------
+    # PRESCRIPTION PAGE
+    # --------------------------------------------------------
+
+    def show_prescription(self):
+
+        self.clear_content()
+
+        header = tk.Frame(
+            self.content,
+            bg=BG
+        )
+
+        header.pack(
+            fill="x",
+            padx=30,
+            pady=25
+        )
+
+        tk.Label(
+            header,
+            text="Prescription Center",
+            bg=BG,
+            fg=NAVY,
+            font=("Segoe UI", 25, "bold")
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            header,
+            text="Generate and review digital prescriptions",
+            bg=BG,
+            fg=MUTED,
+            font=("Segoe UI", 10)
+        ).pack(
+            anchor="w"
+        )
+
+        card = tk.Frame(
+            self.content,
+            bg=WHITE,
+            highlightbackground=BORDER,
+            highlightthickness=1
+        )
+
+        card.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=(0, 30)
+        )
+
+        self.txtPrescriptionPage = tk.Text(
+            card,
+            bg="#FBFEFD",
+            fg=TEXT,
+            font=("Consolas", 11),
+            relief="flat",
+            padx=30,
+            pady=30
+        )
+
+        self.txtPrescriptionPage.pack(
+            fill="both",
+            expand=True,
+            padx=25,
+            pady=25
+        )
+
+        self.txtPrescriptionPage.insert(
+            "1.0",
+            self.generate_prescription_text()
+        )
+
+        self.txtPrescriptionPage.config(
+            state="disabled"
+        )
+
+        tk.Button(
+            card,
+            text="Generate Again",
+            command=self.iPrescription,
+            bg=TEAL,
+            fg=WHITE,
+            relief="flat",
+            bd=0,
+            padx=20,
+            pady=9,
+            cursor="hand2",
+            font=("Segoe UI Semibold", 9)
+        ).pack(
+            pady=(0, 20)
+        )
+
+    # --------------------------------------------------------
+    # SYSTEM PAGE
+    # --------------------------------------------------------
+
+    def show_system(self):
+
+        self.clear_content()
+
+        header = tk.Frame(
+            self.content,
+            bg=BG
+        )
+
+        header.pack(
+            fill="x",
+            padx=30,
+            pady=25
+        )
+
+        tk.Label(
+            header,
+            text="System Information",
+            bg=BG,
+            fg=NAVY,
+            font=("Segoe UI", 25, "bold")
+        ).pack(
+            anchor="w"
+        )
+
+        card = tk.Frame(
+            self.content,
+            bg=WHITE,
+            highlightbackground=BORDER,
+            highlightthickness=1
+        )
+
+        card.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=(0, 30)
+        )
+
+        information = [
+            ("Application", "MediCare Hospital Management"),
+            ("Database", "MySQL"),
+            ("Database Name", "mydata"),
+            ("Table", "hospital"),
+            ("Authentication", "Local administrator login"),
+            ("Status", "Operational")
+        ]
+
+        for i, (key, value) in enumerate(information):
+
+            row = tk.Frame(
+                card,
+                bg=WHITE
+            )
+
+            row.pack(
+                fill="x",
+                padx=35,
+                pady=10
+            )
+
+            tk.Label(
+                row,
+                text=key,
+                bg=WHITE,
+                fg=MUTED,
+                width=20,
+                anchor="w",
+                font=("Segoe UI Semibold", 10)
+            ).pack(
+                side="left"
+            )
+
+            tk.Label(
+                row,
+                text=value,
+                bg=WHITE,
+                fg=TEXT,
+                anchor="w",
+                font=("Segoe UI", 10)
+            ).pack(
+                side="left"
+            )
+
+    # --------------------------------------------------------
+    # DASHBOARD REBUILD
+    # --------------------------------------------------------
+
+    def show_dashboard(self):
+
+        self.build_dashboard()
+
+    def clear_content(self):
+
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+    # --------------------------------------------------------
+    # STATUS BAR
+    # --------------------------------------------------------
+
+    def build_statusbar(self):
+
+        status = tk.Frame(
+            self.root,
+            bg=NAVY,
+            height=28
+        )
+
+        status.pack(
+            side="bottom",
+            fill="x"
+        )
+
+        status.pack_propagate(False)
+
+        tk.Label(
+            status,
+            textvariable=self.status_text,
+            bg=NAVY,
+            fg="#BCCCDC",
+            font=("Segoe UI", 8)
+        ).pack(
+            side="left",
+            padx=15
+        )
+
+        tk.Label(
+            status,
+            text="MediCare HMS  •  MySQL",
+            bg=NAVY,
+            fg="#829AB1",
+            font=("Segoe UI", 8)
+        ).pack(
+            side="right",
+            padx=15
+        )
+
+    # ========================================================
+    # MYSQL FUNCTIONS
+    # ========================================================
+
     def iPrescriptionData(self):
-        if self.Nametable.get() == "" or self.ref.get() == "":
-            messagebox.showerror("Error", "All fields are required")
-        else:
-            conn = mysql.connector.connect(host="localhost", username="root", password="", database="mydata")
-            my_cursor = conn.cursor()
-            my_cursor.execute("insert into hospital values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",(
-               self.Nametable.get(),
-               self.ref.get(),
-               self.Dose.get(),
-               self.nooftab.get(),
-               self.lot.get(),
-               self.issuedate.get(),
-               self.issuedate1.get(),
-               self.DDose.get(),
-               self.SE.get(),
-               self.info.get(),
-               self.BP.get(),
-               self.Medication.get(),
-               self.PatientID.get(),
-               self.NHS.get(),
-               self.PatientName.get(),
-               self.DOB.get(),
-               self.Address.get(),
-               self.StorageAdvice.get()
-           ))
+
+        if (
+            self.Nametable.get().strip() == ""
+            or self.ref.get().strip() == ""
+        ):
+
+            messagebox.showerror(
+                "Missing Information",
+                "Tablet name and Reference Number are required."
+            )
+
+            return
+
+        conn = None
+
+        try:
+
+            conn = get_connection()
+
+            cursor = conn.cursor()
+
+            # IMPORTANT:
+            # This order matches the existing 18-column database
+            # structure used by the original application.
+
+            query = """
+                INSERT INTO hospital VALUES
+                (
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s
+                )
+            """
+
+            values = (
+                self.Nametable.get(),
+                self.ref.get(),
+                self.Dose.get(),
+                self.nooftab.get(),
+                self.lot.get(),
+                self.issuedate.get(),
+                self.issuedate1.get(),
+                self.DDose.get(),
+                self.SE.get(),
+                self.info.get(),
+                self.BP.get(),
+                self.Medication.get(),
+                self.PatientID.get(),
+                self.NHS.get(),
+                self.PatientName.get(),
+                self.DOB.get(),
+                self.Address.get(),
+                self.StorageAdvice.get()
+            )
+
+            cursor.execute(
+                query,
+                values
+            )
+
             conn.commit()
+
+            self.status_text.set(
+                "Record saved successfully"
+            )
+
+            messagebox.showinfo(
+                "Success",
+                "Patient prescription saved successfully."
+            )
+
             self.fetch_data()
-            conn.close()
-            messagebox.showinfo("sucess","inserted sucessfullly")
+
+        except mysql.connector.Error as err:
+
+            messagebox.showerror(
+                "Database Error",
+                f"Unable to save record:\n\n{err}"
+            )
+
+        finally:
+
+            if conn and conn.is_connected():
+                conn.close()
+
+    # --------------------------------------------------------
+    # FETCH DATA
+    # --------------------------------------------------------
 
     def fetch_data(self):
-        conn = mysql.connector.connect(host="localhost", username="root", password="", database="mydata")
-        my_cursor = conn.cursor()
-        my_cursor.execute("SELECT * FROM hospital")
-        rows = my_cursor.fetchall()
 
-        if len(rows) != 0:
-            self.hospital_table.delete(*self.hospital_table.get_children())  # Clear existing data
-            for i in rows:
-                self.hospital_table.insert("", END, values=i)  # Insert each row into the Treeview
-            conn.commit()
-        conn.close()
+        if not hasattr(
+            self,
+            "hospital_table"
+        ):
+            return
 
-    def get_cursor(self, event=""):
-            cursor_row = self.hospital_table.focus()  # Get the focused/selected row
-            contents = self.hospital_table.item(cursor_row)  # Get the content of the selected row
-            row = contents['values']  # Extract the values from the selected row
+        conn = None
 
-            # Now populate the data into the entry fields
-            try:
-                self.Nametable.set(row[0])        # First column: Name of the medicine/table
-                self.ref.set(row[1])              # Second column: Reference number
-                self.Dose.set(row[2])             # Third column: Dose
-                self.nooftab.set(row[3])          # Fourth column: Number of tablets
-                self.lot.set(row[4])              # Fifth column: Lot number
-                self.issuedate.set(row[5])        # Sixth column: Issue date
-                self.issuedate1.set(row[6])       # Seventh column: Expiry date or another date
-                self.DDose.set(row[7])            # Eighth column: Daily dose
-                self.SE.set(row[8])               # Ninth column: Side effects
-                self.info.set(row[9])             # Tenth column: Additional information
-                self.BP.set(row[10])              # Eleventh column: Blood pressure (if applicable)
-                self.Medication.set(row[11])      # Twelfth column: Medication details
-                self.PatientID.set(row[12])       # Thirteenth column: Patient ID
-                self.NHS.set(row[13])             # Fourteenth column: NHS number (if applicable)
-                self.PatientName.set(row[14])     # Fifteenth column: Patient's name
-                self.DOB.set(row[15])             # Sixteenth column: Date of birth
-                self.Address.set(row[16])         # Seventeenth column: Address
-                self.StorageAdvice.set(row[17])   # Eighteenth column: Storage advice
-            except IndexError:
-                print("Error: Row data might be incomplete or not matching the table structure.")
+        try:
+
+            conn = get_connection()
+
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "SELECT * FROM hospital"
+            )
+
+            rows = cursor.fetchall()
+
+            self.hospital_table.delete(
+                *self.hospital_table.get_children()
+            )
+
+            for row in rows:
+
+                self.hospital_table.insert(
+                    "",
+                    tk.END,
+                    values=row
+                )
+
+            self.status_text.set(
+                f"{len(rows)} record(s) loaded"
+            )
+
+        except mysql.connector.Error as err:
+
+            self.status_text.set(
+                "Database connection error"
+            )
+
+            messagebox.showerror(
+                "Database Error",
+                f"Unable to load records:\n\n{err}"
+            )
+
+        finally:
+
+            if conn and conn.is_connected():
+                conn.close()
+
+    # --------------------------------------------------------
+    # GET SELECTED ROW
+    # --------------------------------------------------------
+
+    def get_cursor(self, event=None):
+
+        selected = self.hospital_table.focus()
+
+        if not selected:
+            return
+
+        contents = self.hospital_table.item(
+            selected
+        )
+
+        row = contents.get(
+            "values",
+            []
+        )
+
+        if len(row) < 18:
+            return
+
+        try:
+
+            self.Nametable.set(row[0])
+            self.ref.set(row[1])
+            self.Dose.set(row[2])
+            self.nooftab.set(row[3])
+            self.lot.set(row[4])
+            self.issuedate.set(row[5])
+            self.issuedate1.set(row[6])
+            self.DDose.set(row[7])
+            self.SE.set(row[8])
+            self.info.set(row[9])
+            self.BP.set(row[10])
+            self.Medication.set(row[11])
+            self.PatientID.set(row[12])
+            self.NHS.set(row[13])
+            self.PatientName.set(row[14])
+            self.DOB.set(row[15])
+            self.Address.set(row[16])
+            self.StorageAdvice.set(row[17])
+
+            self.status_text.set(
+                f"Selected patient: {self.PatientName.get()}"
+            )
+
+        except Exception as err:
+
+            messagebox.showerror(
+                "Selection Error",
+                str(err)
+            )
+
+    # --------------------------------------------------------
+    # UPDATE
+    # --------------------------------------------------------
 
     def update(self):
-            if self.PatientID.get() == "":
-                messagebox.showerror("Error", "Select a patient to update")
-                return  # Ensure to exit if no PatientID is provided
 
-            # Debugging output
-            print("Updating record for Patient ID:", self.PatientID.get())
-            print("New Values:",
-                self.Nametable.get(), self.ref.get(), self.Dose.get(), self.nooftab.get(), 
-                self.lot.get(), self.issuedate.get(), self.issuedate1.get(), self.DDose.get(), 
-                self.SE.get(), self.info.get(), self.BP.get(), self.StorageAdvice.get(), 
-                self.Medication.get(), self.NHS.get(), self.PatientName.get(), 
-                self.DOB.get(), self.Address.get())
+        if self.PatientID.get().strip() == "":
 
-            try:
-                conn = mysql.connector.connect(
-                    host="localhost",
-                    user="root",  # Corrected parameter name
-                    password="", 
-                    database="mydata"
+            messagebox.showerror(
+                "Update Error",
+                "Select a patient record first."
+            )
+
+            return
+
+        conn = None
+
+        try:
+
+            conn = get_connection()
+
+            cursor = conn.cursor()
+
+            query = """
+                UPDATE hospital
+                SET
+                    Nametable=%s,
+                    ref=%s,
+                    Dose=%s,
+                    nooftab=%s,
+                    lot=%s,
+                    issuedate=%s,
+                    issuedate1=%s,
+                    DDose=%s,
+                    SE=%s,
+                    info=%s,
+                    BP=%s,
+                    StorageAdvice=%s,
+                    Medication=%s,
+                    NHS=%s,
+                    PatientName=%s,
+                    DOB=%s,
+                    Address=%s
+                WHERE PatientID=%s
+            """
+
+            values = (
+                self.Nametable.get(),
+                self.ref.get(),
+                self.Dose.get(),
+                self.nooftab.get(),
+                self.lot.get(),
+                self.issuedate.get(),
+                self.issuedate1.get(),
+                self.DDose.get(),
+                self.SE.get(),
+                self.info.get(),
+                self.BP.get(),
+                self.StorageAdvice.get(),
+                self.Medication.get(),
+                self.NHS.get(),
+                self.PatientName.get(),
+                self.DOB.get(),
+                self.Address.get(),
+                self.PatientID.get()
+            )
+
+            cursor.execute(
+                query,
+                values
+            )
+
+            conn.commit()
+
+            if cursor.rowcount > 0:
+
+                messagebox.showinfo(
+                    "Update Successful",
+                    "Patient record updated successfully."
                 )
-                my_cursor = conn.cursor()
 
-                my_cursor.execute(
-                    "UPDATE hospital SET Nametable=%s, ref=%s, Dose=%s, nooftab=%s, lot=%s, issuedate=%s, "
-                    "issuedate1=%s, DDose=%s, SE=%s, info=%s, BP=%s, StorageAdvice=%s, Medication=%s, NHS=%s, "
-                    "PatientName=%s, DOB=%s, Address=%s WHERE PatientID=%s",
-                    (
-                        self.Nametable.get(), self.ref.get(), self.Dose.get(), self.nooftab.get(), 
-                        self.lot.get(), self.issuedate.get(), self.issuedate1.get(), self.DDose.get(), 
-                        self.SE.get(), self.info.get(), self.BP.get(), self.StorageAdvice.get(), 
-                        self.Medication.get(), self.NHS.get(), self.PatientName.get(), 
-                        self.DOB.get(), self.Address.get(), self.PatientID.get()
-                    )
+                self.status_text.set(
+                    "Patient record updated"
                 )
 
-                conn.commit()
+                self.fetch_data()
 
-                # Check if any rows were affected
-                if my_cursor.rowcount > 0:
-                    print(f"Rows affected: {my_cursor.rowcount}")
-                    messagebox.showinfo("Success", "Data updated successfully")
-                else:
-                    print("No rows were updated.")
-                    messagebox.showwarning("Warning", "No data was updated; please check your input.")
+            else:
 
+                messagebox.showwarning(
+                    "No Changes",
+                    "No matching Patient ID was found."
+                )
+
+        except mysql.connector.Error as err:
+
+            messagebox.showerror(
+                "Database Error",
+                f"Unable to update record:\n\n{err}"
+            )
+
+        finally:
+
+            if conn and conn.is_connected():
                 conn.close()
-                self.fetch_data()  # Refresh the data after update
-                self.iclear()  # Clear the input fields
-            except mysql.connector.Error as err:
-                messagebox.showerror("Error", f"Error updating data: {err}")
-            finally:
-                if conn.is_connected():
-                    conn.close()  # Ensure connection is closed in case of an error
 
+    # --------------------------------------------------------
+    # PRESCRIPTION TEXT
+    # --------------------------------------------------------
 
+    def generate_prescription_text(self):
+
+        now = datetime.now().strftime(
+            "%d-%m-%Y %H:%M"
+        )
+
+        return (
+            "\n"
+            "                    MEDICARE HOSPITAL\n"
+            "                 DIGITAL PRESCRIPTION\n"
+            "\n"
+            "============================================================\n"
+            f"Generated: {now}\n"
+            "============================================================\n\n"
+            f"Patient ID       : {self.PatientID.get()}\n"
+            f"Patient Name     : {self.PatientName.get()}\n"
+            f"NHS Number       : {self.NHS.get()}\n"
+            f"Date of Birth    : {self.DOB.get()}\n"
+            f"Blood Pressure   : {self.BP.get()}\n"
+            f"Address          : {self.Address.get()}\n\n"
+            "------------------------------------------------------------\n"
+            "MEDICATION\n"
+            "------------------------------------------------------------\n"
+            f"Tablet           : {self.Nametable.get()}\n"
+            f"Reference        : {self.ref.get()}\n"
+            f"Dose             : {self.Dose.get()}\n"
+            f"No. of Tablets   : {self.nooftab.get()}\n"
+            f"Lot Number       : {self.lot.get()}\n"
+            f"Issue Date       : {self.issuedate.get()}\n"
+            f"Expiry Date      : {self.issuedate1.get()}\n"
+            f"Daily Dose       : {self.DDose.get()}\n"
+            f"Medication Info  : {self.Medication.get()}\n\n"
+            "------------------------------------------------------------\n"
+            "ADDITIONAL INFORMATION\n"
+            "------------------------------------------------------------\n"
+            f"Side Effects     : {self.SE.get()}\n"
+            f"Storage Advice   : {self.StorageAdvice.get()}\n"
+            f"Information      : {self.info.get()}\n\n"
+            "============================================================\n"
+            "              Authorized Hospital Record\n"
+            "============================================================\n"
+        )
+
+    # --------------------------------------------------------
+    # GENERATE PRESCRIPTION
+    # --------------------------------------------------------
 
     def iPrescription(self):
-        # Clear previous data in the text widget
-        
-        
-        # Insert prescription details into the text widget
-        self.txtPrescription.insert(END, "Name of tablets:\t\t\t" + self.Nametable.get() + "\n")
-        self.txtPrescription.insert(END, "Reference:\t\t\t" + self.ref.get() + "\n")
-        self.txtPrescription.insert(END, "Dose:\t\t\t" + self.Dose.get() + "\n")
-        self.txtPrescription.insert(END, "Number of Tablets:\t\t" + self.nooftab.get() + "\n")
-        self.txtPrescription.insert(END, "Lot Number:\t\t\t" + self.lot.get() + "\n")
-        self.txtPrescription.insert(END, "Issue Date:\t\t\t" + self.issuedate.get() + "\n")
-        self.txtPrescription.insert(END, "Expiry Date:\t\t\t" + self.issuedate1.get() + "\n")
-        self.txtPrescription.insert(END, "Daily Dose:\t\t\t" + self.DDose.get() + "\n")
-        self.txtPrescription.insert(END, "Side Effects:\t\t\t" + self.SE.get() + "\n")
-        self.txtPrescription.insert(END, "Additional Info:\t\t" + self.info.get() + "\n")
-        self.txtPrescription.insert(END, "Blood Pressure:\t\t\t" + self.BP.get() + "\n")
-        self.txtPrescription.insert(END, "Storage Advice:\t\t\t" + self.StorageAdvice.get() + "\n")
-        self.txtPrescription.insert(END, "Medication:\t\t\t" + self.Medication.get() + "\n")
-        self.txtPrescription.insert(END, "NHS Number:\t\t\t" + self.NHS.get() + "\n")
-        self.txtPrescription.insert(END, "Patient Name:\t\t\t" + self.PatientName.get() + "\n")
-        self.txtPrescription.insert(END, "Date of Birth:\t\t\t" + self.DOB.get() + "\n")
-        self.txtPrescription.insert(END, "Address:\t\t\t" + self.Address.get() + "\n")
 
-    def idelete(self):
-    # Clear all input fields
-        self.Nametable.set("")
-        self.ref.set("")
-        self.Dose.set("")
-        self.nooftab.set("")
-        self.lot.set("")
-        self.issuedate.set("")
-        self.issuedate1.set("")
-        self.DDose.set("")
-        self.SE.set("")
-        self.info.set("")
-        self.BP.set("")
-        self.StorageAdvice.set("")
-        self.Medication.set("")
-        self.NHS.set("")
-        self.PatientName.set("")
-        self.DOB.set("")
-        self.Address.set("")
-        
-        # Clear the prescription text area
-        self.txtPrescription.delete(1.0, END)
+        prescription = self.generate_prescription_text()
 
-        # Optionally, display a message to confirm deletion
-        messagebox.showinfo("Deleted", "Prescription data has been deleted.")
+        if hasattr(
+            self,
+            "txtPrescription"
+        ):
+
+            self.txtPrescription.config(
+                state="normal"
+            )
+
+            self.txtPrescription.delete(
+                "1.0",
+                tk.END
+            )
+
+            self.txtPrescription.insert(
+                "1.0",
+                prescription
+            )
+
+            self.txtPrescription.config(
+                state="disabled"
+            )
+
+        self.status_text.set(
+            "Prescription generated"
+        )
+
+        messagebox.showinfo(
+            "Prescription Ready",
+            "Prescription generated successfully."
+        )
+
+    # --------------------------------------------------------
+    # CLEAR
+    # --------------------------------------------------------
 
     def iclear(self):
-        # Clear specific input fields
-        self.Nametable.set("")
-        self.ref.set("")
-        self.Dose.set("")
-        self.nooftab.set("")
-        self.lot.set("")
-        self.issuedate.set("")
-        self.issuedate1.set("")
-        self.DDose.set("")
-        self.SE.set("")
-        self.info.set("")
-        self.BP.set("")
-        self.StorageAdvice.set("")
-        self.Medication.set("")
-        self.NHS.set("")
-        self.PatientName.set("")
-        self.DOB.set("")
-        self.Address.set("")
-        
-        # Optionally, you can also clear the prescription text area
-        self.txtPrescription.delete(1.0, END)
-        
-        # Display a message to confirm clearing
-        messagebox.showinfo("Cleared", "Prescription data has been cleared.")
 
+        variables = [
+            self.Nametable,
+            self.ref,
+            self.Dose,
+            self.nooftab,
+            self.lot,
+            self.issuedate,
+            self.issuedate1,
+            self.DDose,
+            self.SE,
+            self.info,
+            self.BP,
+            self.StorageAdvice,
+            self.Medication,
+            self.PatientID,
+            self.NHS,
+            self.PatientName,
+            self.DOB,
+            self.Address
+        ]
+
+        for variable in variables:
+            variable.set("")
+
+        if hasattr(
+            self,
+            "txtPrescription"
+        ):
+
+            self.txtPrescription.config(
+                state="normal"
+            )
+
+            self.txtPrescription.delete(
+                "1.0",
+                tk.END
+            )
+
+            self.txtPrescription.insert(
+                "1.0",
+                "Select patient information and click\n"
+                "\"Generate Prescription\" to preview it here."
+            )
+
+            self.txtPrescription.config(
+                state="disabled"
+            )
+
+        self.status_text.set(
+            "Form cleared"
+        )
+
+    # --------------------------------------------------------
+    # DELETE / CLEAR
+    # --------------------------------------------------------
+
+    def idelete(self):
+
+        result = messagebox.askyesno(
+            "Clear Prescription",
+            "Clear all currently entered prescription information?"
+        )
+
+        if result:
+
+            self.iclear()
+
+            self.status_text.set(
+                "Prescription data cleared"
+            )
+
+
+# ============================================================
+# APPLICATION START
+# ============================================================
 
 if __name__ == "__main__":
+
     window = tk.Tk()
-    app = LoginPage(window)
+
+    LoginPage(window)
+
     window.mainloop()
